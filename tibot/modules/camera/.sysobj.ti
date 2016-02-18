@@ -1,0 +1,17 @@
+class=proj
+name='o2cl-tibot-camera'
+description="    teste"
+
+
+Depend{name='libtiobj'}
+Depend{name='o2cl'}
+Depend{name='o2cl-tibot'}
+
+
+App{
+	name="Camera";src="src/camera.cpp"
+	Depend{name='tiobj'}
+}
+
+
+Data{name="etc";src="data"}

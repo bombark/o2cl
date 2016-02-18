@@ -1,0 +1,28 @@
+class=proj:ticlass
+name='o2cl-tibot'
+description="    teste"
+
+
+Depend{name='libtiobj'}
+Depend{name='o2cl'}
+
+
+
+Bash{name="make";src="make.sh"}
+Bash{name="new";src="new.sh"}
+Bash{name="add";src="add.sh"}
+Bash{name="addmod";src="addmod.sh"}
+Bash{name="init";src="init.sh"}
+
+Cpp{
+	name="server";src="server.cpp"
+	Depend{name="microhttpd"}
+	Depend{name="tiobj"}
+}
+
+Cpp{
+	name="run";src="run.cpp"
+	Depend{name="tiobj"}
+}
+
+#Data{name="etc";src="data"}
