@@ -1,0 +1,33 @@
+class=proj:ticlass
+name='o2cl-proj'
+description="    teste"
+
+
+Depend{name='libtiobj'}
+Depend{name='o2cl'}
+Depend{name='o2cl-node'}
+
+
+Package{name="gen"}
+Package{name="new"}
+Cpp{
+	name="gen/control";src="gen/control.cpp"
+	Depend{name='tiobj'}
+}
+Cpp{
+	name="gen/cmake";src="gen/cmake.cpp"
+	Depend{name='tiobj'}
+}
+Cpp{
+	name="gen/make";src="gen/make.cpp"
+	Depend{name='tiobj'}
+}
+
+Bash{name="make";src="make.sh"}
+Bash{name="build";src="build.sh"}
+
+Bash{name="new/app";src="new/app.sh"}
+Bash{name="new/lib";src="new/lib.sh"}
+Bash{name="new/ticlass";src="new/ticlass.sh"}
+
+Data{name="etc";src="data"}

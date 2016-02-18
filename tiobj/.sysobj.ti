@@ -1,0 +1,19 @@
+class=proj:ticlass
+name='o2cl-tiobj'
+description="    Class to handle tiobj notation"
+
+
+Depend{name='libtiobj'}
+
+Cpp{
+	name="get";src="get.cpp"
+	Depend{name='tiobj'}
+}
+Cpp{
+	name="set";src="set.cpp"
+	Depend{name='tiobj'}
+}
+Cpp{
+	name="replace";src="replace.cpp"
+	Depend{name='tiobj'}
+}

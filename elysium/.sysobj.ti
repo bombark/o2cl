@@ -1,0 +1,12 @@
+class=proj:ticlass
+name='o2cl-elysium'
+description="    class to create static html page from tiobj files"
+
+
+Depend{name='libtiobj'}
+
+Cpp{
+	name="make";src="make.cpp"
+	Depend{name='tiobj'}
+}
+

@@ -1,0 +1,13 @@
+class=proj:app
+name='o2cl'
+description='    Object-Oriented Command Line Base'
+
+Depend{name='libtiobj'}
+Depend{name='libtisys'}
+Depend{name='libtiarg'}
+
+App{
+	name='o2cl';src='src/main.cpp'
+	Depend{name="tiobj"}
+	Depend{name="tisys"}
+}

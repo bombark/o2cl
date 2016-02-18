@@ -1,0 +1,166 @@
+/* line 2, ../sass/portal.scss */
+.jumbotron {
+  height: 250px;
+  background-repeat: no-repeat;
+  width: 100%;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  margin-top: 50px;
+  margin-bottom: 0px;
+  border-bottom-width: 2px;
+  border-bottom-style: solid;
+  border-bottom-color: #DDDDDD;
+}
+/* line 12, ../sass/portal.scss */
+.jumbotron h1 {
+  color: #FFFFFF;
+  text-shadow: 0.1em 0.1em 0.2em black;
+  float: right;
+  right: 20%;
+}
+
+/* line 24, ../sass/portal.scss */
+.navsearch {
+  height: 200px;
+  background-color: #0b6c1d;
+  background-image: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.4));
+}
+
+/* line 30, ../sass/portal.scss */
+.navsearch .input-group {
+  margin-top: 80px;
+}
+
+/* line 37, ../sass/portal.scss */
+.search-item {
+  margin-bottom: 5px;
+}
+/* line 40, ../sass/portal.scss */
+.search-item img {
+  width: 180px;
+  height: 180px;
+}
+/* line 45, ../sass/portal.scss */
+.search-item h1 {
+  display: inline;
+}
+/* line 49, ../sass/portal.scss */
+.search-item .search-item-body {
+  height: 140px;
+}
+/* line 53, ../sass/portal.scss */
+.search-item .search-item-buttons {
+  position: relative;
+  float: right;
+  right: 6px;
+}
+/* line 59, ../sass/portal.scss */
+.search-item .search-item-star {
+  position: relative;
+  float: right;
+  right: 6px;
+}
+
+/* line 67, ../sass/portal.scss */
+#typeahead .tt-hint:hover {
+  background-color: #000;
+}
+/* line 71, ../sass/portal.scss */
+#typeahead .tt-query:hover {
+  background-color: #000;
+}
+/* line 75, ../sass/portal.scss */
+#typeahead .tt-menu {
+  width: 422px;
+  margin: 12px 0;
+  padding: 8px 0;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  -webkit-border-radius: 8px;
+  -moz-border-radius: 8px;
+  border-radius: 8px;
+  -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+/* line 90, ../sass/portal.scss */
+#typeahead .tt-suggestion:hover {
+  cursor: pointer;
+  color: #fff;
+  background-color: #0097cf;
+}
+
+/* line 99, ../sass/portal.scss */
+.idxitem {
+  margin-top: 16px;
+}
+/* line 102, ../sass/portal.scss */
+.idxitem h1 {
+  font-size: 24px;
+}
+/* line 106, ../sass/portal.scss */
+.idxitem p {
+  text-align: justify;
+}
+
+/* line 115, ../sass/portal.scss */
+.submenu {
+  position: relative;
+  top: -30px;
+  left: 0px;
+  margin: 0px;
+  border: 0px;
+}
+
+/* line 123, ../sass/portal.scss */
+.navbar {
+  margin: 0px;
+}
+
+/* line 128, ../sass/portal.scss */
+footer {
+  margin-top: 40px;
+  height: 100px;
+  background-color: #0b6c1d;
+}
+
+.config-img a {
+	display: none;
+	position: relative;
+	top: -30px;
+	background-color: rgba(61, 211, 44, 0.9);
+	width: 200px;
+	height: 30px;
+	text-align: center;
+	
+}
+
+.config-img:hover a {
+	display: inherit;
+}
+
+.config h3 {
+	padding: 8px;
+}
+
+.config h3:hover {
+	background-color: #cdcdcd;
+}
+
+.config h3:hover p {
+	display: inline;
+}
+
+.config h3 p {
+	float: right;
+	display: none;
+}
+
+
+
+
+
+

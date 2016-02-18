@@ -1,0 +1,19 @@
+class=proj:ticlass
+name='o2cl-node'
+description="    function to handle the node in the filesystem"
+
+Cpp{
+	name="class";src="class.cpp"
+	Depend{name='tiobj'}
+	Depend{name='tisys'}
+}
+Cpp{
+	name="is";src="is.cpp"
+	Depend{name='tiobj'}
+	Depend{name='tisys'}
+}
+Cpp{
+	name="isnot";src="isnot.cpp"
+	Depend{name='tiobj'}
+	Depend{name='tisys'}
+}

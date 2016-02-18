@@ -1,0 +1,7 @@
+Origin: @origin
+Label: @label
+Codename: @codename
+Architectures: amd64
+Components: @components
+Description: @description
+SignWith: @key
