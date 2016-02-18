@@ -1,0 +1,9 @@
+class=proj:ticlass
+name='remote'
+description="    Class to handle remote host using ssh and scp"
+
+Bash{name="enter";src="enter.sh"}
+Bash{name="push";src="push.sh"}
+Bash{name="mount";src="mount.sh"}
+Bash{name="use";src="use.sh"}
+Bash{name="default";src="default.sh"}
