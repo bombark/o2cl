@@ -35,10 +35,10 @@ void saveInfo(Mat& img){
 
 int main(){
 	TiObj params;
-	params.loadText(getenv("params"));
+	char* _params = getenv("params");
+	if ( _params )
+		params.loadText(_params);
 
-	string url = params.atStr("url");
-	chdir(url.c_str());
 	Mat img;
 
 	// If the device is fake, then create a example of the data
@@ -50,7 +50,7 @@ int main(){
 
 	// Read the Cam 
 	} else {
-		int id = atoi( params.atStr("id").c_str() );
+		int id = atoi( params.atStr("id","0").c_str() );
 		G_capture.open(id);
 		signal( SIGINT, sig_hnd );
 
@@ -62,7 +62,9 @@ int main(){
 			G_capture >> img;
 			//imshow("asa",img);
 			imwrite("image.jpg",img);
-			waitKey(300);
+			waitKey(100);
+			cout << "#end\n";
+			fflush(stdout);
 		}
 	}
 
