@@ -1,0 +1,19 @@
+class=proj:ticlass
+name='o2cl-stereo'
+description="    Class to handle tiobj notation"
+
+
+Depend{name='libtiobj'}
+
+Cpp{
+	name="capture";src="capture.cpp"
+	Depend{name='tiobj'}
+}
+Cpp{
+	name="calibrate";src="calibrate.cpp"
+	Depend{name='tiobj'}
+}
+Bash{
+	name="new";src="new.sh"
+}
+Data{name="etc";src="data"}

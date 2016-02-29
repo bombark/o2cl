@@ -1,0 +1,15 @@
+class=proj
+name='o2cl-tibot-keypoints'
+description="    teste"
+
+
+Depend{name='libtiobj'}
+Depend{name='o2cl'}
+Depend{name='o2cl-tibot'}
+
+
+App{
+	name="Keypoints";src="src/keypoints.cpp"
+	Depend{name='tiobj'}
+}
+

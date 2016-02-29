@@ -1,0 +1,16 @@
+class=proj
+name='o2cl-tibot-kinect'
+description="    teste"
+
+
+Depend{name='libtiobj'}
+Depend{name='o2cl'}
+Depend{name='o2cl-tibot'}
+
+
+App{
+	name="Kinect";src="src/kinect.cpp"
+	Depend{name='tiobj'}
+}
+
+

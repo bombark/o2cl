@@ -1,0 +1,13 @@
+class="Stereo"
+
+width=320
+height=240
+
+board = {
+	cols=4
+	rows=4
+	size=10
+}
+
+left = 0
+right = 1
