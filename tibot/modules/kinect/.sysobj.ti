@@ -6,10 +6,10 @@ description="    teste"
 Depend{name='libtiobj'}
 Depend{name='o2cl'}
 Depend{name='o2cl-tibot'}
-
+Depend{name='libfreenect-dev'}
 
 App{
-	name="Kinect";src="src/kinect.cpp"
+	name="Kinect";src="src/kinect.c"
 	Depend{name='tiobj'}
 }
 

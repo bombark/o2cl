@@ -42,80 +42,109 @@ class Option{
 
 
 
+enum State {VERB, ACCUSATIVE, IN_PREPOSITION};
+
+
 class AutoComplete {
   public:
+	State state;
 	TiObj param;
 	TiObj syntax;
 	int cur_pos;
 	std::string cur;
-	std::string last;
 	std::string method;
 	std::string class_name;
-
-	AutoComplete(int argc, char** argv){
-		//this->getSyntax(argv[2]);
-		this->class_name = argv[2];
-
-		this->cur_pos = atoi(argv[1]);
-		if ( this->cur_pos+2 < argc )
-			this->cur = argv[this->cur_pos+2];
-		this->last = argv[this->cur_pos+2-1];
+	std::string o2cl_url;
+	std::string prep;
+	bool has_syntax;
 
 
-		this->method = argv[3];
+	AutoComplete(int argc, char** argv, int cursor_pos){
+		// Set the attributes
+		this->state  = VERB;
+		this->class_name = argv[0];
+		this->cur_pos = cursor_pos;
+
+		this->o2cl_url = "/o2cl";
+		this->has_syntax = false;
 
 
+		if ( this->cur_pos < argc )
+			this->cur = argv[ this->cur_pos ];
 
 
-		string noun, prep;
-		int state = 0;
-		for (int i=4; i<argc; i++){
-			string word = argv[i];
-			if ( state == 0 ){
-				if ( this->isPreposition(word) ){
-					if ( noun != "" )
-						param.set(prep,noun);
-					state = 1;
-					prep = word;
-					noun = "";
-				} else {
-					param.set("_Akk", word);
+		if ( argc > 1 ){
+			bool is_state_set = false;
+			this->method = argv[1];
+			string noun, prep;
+
+			if ( this->cur_pos >= 2 ){
+				this->loadSyntax(this->class_name, this->method);
+				this->state = ACCUSATIVE;
+				State parse_state = ACCUSATIVE;
+				for (int i=2; i<argc; i++){
+					string word = argv[i];
+
+					// Save the state of the cursor
+					if ( i == this->cur_pos ){
+						is_state_set = true;
+						this->state = parse_state;
+						if ( this->state == IN_PREPOSITION )
+							this->prep = prep;
+					}
+
+					// Parse inside of Preposition
+					if ( parse_state == IN_PREPOSITION ){
+						noun += word;
+						parse_state = ACCUSATIVE;
+
+					// Parse accusative
+					} else {
+						if ( this->isPreposition(word) ){
+							if ( noun != "" )
+								param.set(prep,noun);
+							prep = word;
+							noun = "";
+							parse_state = IN_PREPOSITION;
+						} else {
+							param.set("acc", word);
+							prep = "";
+						}
+					}
 				}
-			} else {
-				noun += word;
-				state = 0;
-				/*if ( word == "/" ){
-					state = 1;
-				} else if ( i+1 < argc ){
-					if ( strcmp(argv[i+1],"/") == 0 )
-						state = 1;
-				}*/
+
+				if ( prep != "" ){
+					if ( noun != "" ){
+						param.set(prep,noun);
+						if ( !is_state_set )
+							this->state = ACCUSATIVE;
+					} else {
+						if ( !is_state_set ){
+							this->state = IN_PREPOSITION;
+							this->prep = prep;
+						}
+					}
+//					is_state_set = true;
+				}
+
 			}
+
+
+
 		}
-		if ( noun != "" )
-			param.set(prep,noun);
 
 
 	}
 
 
 
-	void getSyntax(std::string cmd){
-		char buffer[1024];
-		std::string text;
-		FILE* fp = popen( Join("%s --syntax").at(cmd).ok.c_str(), "r" );
-		while ( !feof(fp) ){
-			fgets(buffer,1024,fp);
-			text += buffer;
-		}
-		this->syntax.loadText(text);
-		//this->syntax.loadFile("arg.ti");
-	}
 
 
-	bool isPreposition(std::string word){
-		return this->syntax.has(word);
-	}
+
+
+
+
+
 
 
 	/*void showMethods(){
@@ -135,7 +164,7 @@ class AutoComplete {
 	
 	void showSubMethods(){
 		struct dirent *dp;
-		DIR* dir = opendir( Join("/class/%s/bin/%s").at(this->class_name).at(this->method).ok.c_str() );
+		DIR* dir = opendir( Join("%s/class/%s/bin/%s").at(this->o2cl_url).at(this->class_name).at(this->method).ok.c_str() );
 		while ((dp = readdir(dir)) != NULL){
 			if ( dp->d_name[0] == '.' )
 				continue;
@@ -146,56 +175,43 @@ class AutoComplete {
 	}
 
 
-	void showPreposition(){
-		for (int i=0; i<this->syntax.length(); i++){
-			if ( isSubstr(this->cur, syntax[i].name) )
-				cout << syntax[i].name << " " << endl;
-		}
-	}
-
-	void showNoun(TiObj& obj){
-		if ( obj.is("Enum") ){
-			showEnum(obj);
-		} else {
-			//this->showNoun(obj.atStr("type"));
-		}
-	}
+	void showPreposition();
 
 
-	void showNoun(std::string type){
-		if ( type=="Node" ){
-			showFolder(this->cur);
-		} else if ( type=="User" ){
-			Filesystem fs;
-			fs.listdir("/home");
-			for (int i=0; i<fs.box.size(); i++){
-				if ( isSubstr(this->cur, fs.box[i].atStr("name")) )
-					cout << fs.box[i].atStr("name") << " " << endl;
+
+	void showNoun( TiObj& script ){
+		for (int i=0; i<script.size(); i++){
+			TiObj& cmd = script.box[i];
+			if ( cmd.classe == "ls" ){
+				showFolder( this->cur, cmd.atStr("acc") );
 			}
-		} else {
-			showFolder(this->cur, type);
 		}
 	}
 
 
 
+	bool isPreposition(std::string word);
 
+	State getState();
+
+	void loadSyntax(std::string classe, std::string method);
+
+	void showAccusative();
+	void showInPreposition();
+
+
+	TiObj* getPrepositionObject(std::string prep);
 
 
 	void showMethods(){
-		Filesystem fs( Join("/class/%s/bin").at(this->class_name).ok );
-
-		string path;
-		string name;
-
+		string path, name;
 		path = path_remove(this->method);
 		name = path_last(this->method);
 
 
-
-		fs.listdir(  path );
+		Filesystem fs( Join("%s/class/%s/bin").at(this->o2cl_url).at(this->class_name).ok );
+		fs.listdir( path );
 		vector<Option> options;
-
 		for (int i=0; i<fs.box.size(); i++){
 			if ( isSubstr(name, fs.box[i].atStr("name")) ){
 				if ( fs.box[i].is("Folder") )
@@ -204,7 +220,6 @@ class AutoComplete {
 					options.push_back( Option(fs.box[i].atStr("name"), fs.box[i].atStr("url")+" ") );
 			}
 		}
-
 
 
 		if ( options.size() == 0 ){
@@ -352,6 +367,84 @@ class AutoComplete {
 
 
 
+
+
+
+/* Public ====*/
+
+
+
+void AutoComplete::showAccusative(){
+	this->showPreposition();
+	if ( has_syntax && this->syntax.has("acc") ){
+		this->showNoun( this->syntax.atObj("acc") );
+	}
+}
+
+
+void AutoComplete::showInPreposition(){
+	TiObj* script = this->getPrepositionObject( this->prep );
+	if ( script ){
+		this->showNoun( *script );
+	}
+}
+
+
+
+
+/* Private ====*/
+
+void AutoComplete::loadSyntax(std::string classe, std::string method){
+	this->syntax.loadFile( Join("/o2cl/class/%s/syntax/%s.ti").at(classe).at(method).ok );
+	if ( this->syntax.classe != "Error" ){
+		this->has_syntax = true;
+	}
+}
+
+
+TiObj* AutoComplete::getPrepositionObject(std::string prep){
+	for (int i=0; i<this->syntax.size(); i++){
+		TiObj& obj = this->syntax.box[i];
+		if ( prep == obj.classe )
+			return &obj;
+	}
+	return NULL;
+}
+
+
+void AutoComplete::showPreposition(){
+	for (int i=0; i<this->syntax.size(); i++){
+		TiObj& obj = this->syntax.box[i];
+		if ( isSubstr(this->cur,obj.classe) )
+			cout << obj.classe << endl;
+	}
+}
+
+
+
+bool AutoComplete::isPreposition(std::string word){
+	for (int i=0; i<this->syntax.size(); i++){
+		TiObj& obj = this->syntax.box[i];
+		if ( word == obj.classe )
+			return true;
+	}
+	return false;
+}
+
+State AutoComplete::getState(){
+	return this->state;
+}
+
+
+
+/*--------------------------------------------------------------------------------------*/
+
+
+
+
+
+
+
 bool isFolder(string url){
 	struct stat n_stat;
 	if ( stat(url.c_str(), &n_stat) != -1 ){
@@ -364,34 +457,27 @@ bool isFolder(string url){
 
 
 
+
+
+
+
+
 int main(int argc, char** argv){
 	if ( argc < 3 )
 		return 0;
-	AutoComplete complete(argc,argv);
 
-	if ( argc <= 4 ){
+	AutoComplete complete(argc-2,argv+2, atoi(argv[1]));
+	int state = complete.getState();
+//cout << state << endl;
+		if ( state == VERB ){
 		complete.showMethods();
-	} else {
-		if ( isFolder( Join("/class/%s/bin/%s").at(complete.class_name).at(complete.method).ok  ) ){
-			complete.showSubMethods();
-		}
+	} else if ( state == ACCUSATIVE ){
+		complete.showAccusative();
+	} else if ( state == IN_PREPOSITION ){
+		complete.showInPreposition();
 	}
-
-	/*if ( argc <= 4 ){
-		complete.showPreposition();
-	} else {
-		if ( complete.isPreposition(complete.last) ){
-			TiVar& var = complete.syntax.at(complete.last);
-			if ( var.isObj() ){
-				complete.showNoun( var.Obj() );
-			} else {
-				complete.showNoun( var.Str() );
-			}
-		} else {
-			complete.showPreposition();
-		}
-	}*/
-
-
 	return 0;
 }
+
+
+/*--------------------------------------------------------------------------------------*/

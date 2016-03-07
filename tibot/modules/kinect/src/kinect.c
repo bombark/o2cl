@@ -204,8 +204,9 @@ void kinect_read(Kinect* kt){
 /*======================================- MAIN -=======================================*/
 
 void intHandler(int dummy){
-	printf("Finalizing\n");
+	fprintf(stderr,"Kinnnect Finalizing\n");
 	kinect_finish(&G_kt);
+	sleep(1);
 	exit(0);
 }
 
@@ -219,7 +220,10 @@ int main(int argc, char **argv){
 	}
 	
 	
+	//signal(SIGQUIT, intHandler);
 	signal(SIGINT, intHandler);
+	//signal(SIGHUP, intHandler);
+
 	while (1){
 		kinect_read(&G_kt);
 		printf("#end\n");

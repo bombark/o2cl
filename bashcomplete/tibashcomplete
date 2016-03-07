@@ -27,7 +27,7 @@ _ti_all () {
 	IFS=$saveIFS;
 }
 
-list=$(ls "/class")
+list=$(ls "/o2cl/class")
 for class_name in $list; do
 	complete -o nospace -F _ti_all $class_name
 done

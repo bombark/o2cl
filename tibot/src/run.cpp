@@ -76,6 +76,7 @@ class Process {
 	void endStep();
 	
 	void  close();
+	void kill();
 };
 
 /*--------------------------------------------------------------------------------------*/
@@ -97,7 +98,9 @@ class ProcessPkg {
 	~ProcessPkg();
 	void exec(TiObj& node);
 	Process* find(std::string name);
-	void rm(int i);
+	void close(int i);
+	void rm(int pid);
+
 	void check();
 	void wait();
 	void show();
@@ -130,6 +133,8 @@ Process::Process(std::string classe, std::string name, TiObj& params){
 	this->params = &params;
 	
 	gettimeofday(&this->t_ini, NULL);
+	this->fd_read[0] = -1;
+	this->fd_write[1] = -1;
 }
 
 char* Process::recv(){
@@ -278,12 +283,18 @@ void Process::endStep(){
 
 
 void Process::close(){
-	::close(this->fd_read[0]);
-	::close(this->fd_write[1]);
-	kill(this->pid, SIGINT);
+	if ( this->fd_read[0] != -1 )
+		::close(this->fd_read[0]);
+	if ( this->fd_write[1] != -1 )
+		::close(this->fd_write[1]);
+	this->fd_read[0] = -1;
+	this->fd_write[1] = -1;
 }
 
-
+void Process::kill(){
+	int ret = ::kill(this->pid, SIGINT); //SIGINT);  //SIGHUP);
+	cout << "send signal : " << ret << endl;
+}
 
 /*--------------------------------------------------------------------------------------*/
 
@@ -301,7 +312,15 @@ ProcessPkg::ProcessPkg(){
 
 ProcessPkg::~ProcessPkg(){
 	for (int i=0; i<process.size(); i++){
-		this->rm(i);
+		Process& proc = *this->process[i];
+		cout << "Finalizing the process "<< proc.name << endl;
+		proc.close();
+		proc.kill();
+	}
+
+	if ( process.size() > 0 ){
+		cout << "Waiting...\n";
+		sleep(1);
 	}
 }
 
@@ -400,23 +419,29 @@ void ProcessPkg::wait(){
 }
 
 
-void ProcessPkg::rm(int i){
-	Process& proc = *this->process[i];
-	cout << "Finalizing the process "<< proc.name << endl;
-	proc.close();
-	delete this->process[i];
-}
-
 
 void ProcessPkg::show(){
 	for (int i=0; i<process.size(); i++){
 		Process& proc = *this->process[i];
 		cout << Join("%s (%d - %d) : %d < %d\n").at(proc.name).at(proc.clock).at(proc.time).at(proc.pmutex).at((int)proc.pmask).ok;
 	}
-
-
 }
 
+
+void ProcessPkg::rm(int pid){
+	int i=0;
+	Process* proc = NULL;
+	for (; i<process.size(); i++){
+		proc = this->process[i];
+		if ( proc->pid == pid )
+			break;
+	}
+	if ( proc ){
+		proc->close();
+		delete proc;
+		this->process.erase( this->process.begin()+i );
+	}
+}
 
 
 /*--------------------------------------------------------------------------------------*/
@@ -433,9 +458,10 @@ void intHandler(int dummy){
 }
 
 void intChild(int sig_num){
+	cout << "Child Signal " << sig_num << endl;
 	int signal;
 	int pid = wait(&signal);
-	//G_processpkg.rm(pid);
+	G_processpkg.rm(pid);
 }
 
 
