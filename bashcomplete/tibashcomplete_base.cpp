@@ -416,7 +416,7 @@ void AutoComplete::showPreposition(){
 	for (int i=0; i<this->syntax.size(); i++){
 		TiObj& obj = this->syntax.box[i];
 		if ( isSubstr(this->cur,obj.classe) )
-			cout << obj.classe << endl;
+			cout << obj.classe << " \n";
 	}
 }
 

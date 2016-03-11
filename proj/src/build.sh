@@ -6,6 +6,9 @@ if [ ! -e "build" ]; then
 	proj make
 fi
 
+sysobj_to=$(tiobj "@.sysobj.ti" get "prefix_install")
+
+echo $sysobj_to
 
 cd "build";
 make install;
@@ -21,13 +24,12 @@ mkdir -p ".tmp"
 
 if [ "$to" != "" ]; then
 	to=".tmp/$to";
-	mkdir -p "$to"
-
-	#cd ".root"; tar czf "../.tmp/data.tar.gz" *; cd - > "/dev/null";
+elif [ "$sysobj_to" != "" ]; then
+	to=".tmp/$sysobj_to";
 else
 	to=".tmp/"
-	#cd ".builded"; tar czf "../.tmp/data.tar.gz" *; cd - > "/dev/null";
 fi
+mkdir -p "$to"
 
 rsync -r ".builded/" "$to"
 

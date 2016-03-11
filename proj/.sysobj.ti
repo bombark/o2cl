@@ -1,7 +1,7 @@
 class=proj:ticlass
 name='o2cl-proj'
 description="    teste"
-
+prefix_install="o2cl/class/proj"
 
 Depend{name='libtiobj'}
 Depend{name='o2cl'}

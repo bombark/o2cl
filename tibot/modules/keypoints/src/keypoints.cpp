@@ -13,19 +13,28 @@ using namespace std;
 using namespace cv;
 
 
-void writeKeypoints(FILE* fd, vector<KeyPoint>& keypoints){
+void writeKeypoints(FILE* fd, vector<KeyPoint>& keypoints, uint limit=-1){
+	int rows = (limit<keypoints.size())?limit:keypoints.size();
 	ftruncate(fileno(fd), 0);
 	fseek(fd,SEEK_SET,0);
-	for (int i=0; i<keypoints.size(); i++){
+	for (int i=0; i<rows; i++){
 		KeyPoint& kp = keypoints[i];
 		fprintf(fd,"{x=%d;y=%d}\n",(int)kp.pt.x,(int)kp.pt.y);
 	}
 }
 
-void writeDescriptors(FILE* fd, Mat& descriptors){
+void writeDescriptors(FILE* fd, Mat& descriptors, uint limit=-1){
+	int rows = (limit<descriptors.rows)?limit:descriptors.rows;
+
+	TiObj info;
+	info.set("rows", rows);
+	info.set("cols", descriptors.cols);
+	info.set("type", (int)descriptors.type());
+	info.saveFile("descriptors.ti");
+
 	ftruncate(fileno(fd), 0);
 	fseek(fd,SEEK_SET,0);
-	fwrite(descriptors.data, 4, descriptors.cols*descriptors.rows, fd);
+	fwrite(descriptors.data, 4, descriptors.cols*rows, fd);
 }
 
 
@@ -34,7 +43,7 @@ void writeDescriptors(FILE* fd, Mat& descriptors){
 int main(){
 	char buffer[128];
 	TiObj params( getenv("params") );
-	
+	int limit = params.atInt("limit",128);
 	//initModules_nonfree();
 
 	Mat img;
@@ -43,7 +52,8 @@ int main(){
 	
 	int cols = info.atInt("cols");
 	int rows = info.atInt("rows");
-	
+
+
 	img.create( rows, cols, CV_8UC3 );
 	
 	FILE* fd = fopen("image/image", "r");
@@ -59,19 +69,21 @@ int main(){
 	Mat gray, descriptors, output;
 	vector<KeyPoint> keypoints;
 
-	string detector_method  = params.atStr("detector","SURF");
+	 SurfFeatureDetector detector( 400 );
+	/*string detector_method  = params.atStr("detector","SURF");
 	Ptr<FeatureDetector> detector = FeatureDetector::create( detector_method );
 	if ( detector == NULL ){
 		cerr << Join("Detector %s is not valid\n").at(detector_method).ok;
 		exit(1);
-	}
-	
-	string extractor_method = params.atStr("extractor","SURF");
+	}*/
+
+	SurfDescriptorExtractor extractor;
+	/*string extractor_method = params.atStr("extractor","SURF");
 	Ptr<DescriptorExtractor> extractor =  DescriptorExtractor::create( extractor_method );
 	if ( extractor == NULL ){
 		cerr << Join("Extractor %s is not valid\n").at(extractor_method).ok;
 		exit(1);
-	}
+	}*/
 	
 	while( scanf("%s",buffer) ){
 		// Read the input
@@ -80,12 +92,17 @@ int main(){
 		cvtColor( img, gray, CV_BGR2GRAY );
 
 		// Process
-		detector->detect(gray, keypoints);
-		extractor->compute( gray, keypoints, descriptors );
+		//detector->detect(gray, keypoints);
+		//extractor->compute( gray, keypoints, descriptors );
 		
+		detector.detect(gray, keypoints);
+		extractor.compute( gray, keypoints, descriptors );
+
+
 		// Write result
-		writeKeypoints(fd_keypoints, keypoints);
-		writeDescriptors(fd_descriptors, descriptors);
+		keypoints.resize( limit );
+		writeKeypoints(fd_keypoints, keypoints, limit);
+		writeDescriptors(fd_descriptors, descriptors, limit);
 		
 		// Show
 		drawKeypoints (img, keypoints, output);

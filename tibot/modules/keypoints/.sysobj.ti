@@ -2,6 +2,8 @@ class=proj
 name='o2cl-tibot-keypoints'
 description="    teste"
 
+prefix_install="o2cl/class/tibot/etc/Keypoints"
+
 
 Depend{name='libtiobj'}
 Depend{name='o2cl'}
