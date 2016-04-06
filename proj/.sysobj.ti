@@ -25,6 +25,7 @@ Cpp{
 
 Bash{name="make";src="make.sh"}
 Bash{name="build";src="build.sh"}
+Bash{name="dbuild";src="dbuild.sh"}
 
 Bash{name="new/app";src="new/app.sh"}
 Bash{name="new/lib";src="new/lib.sh"}

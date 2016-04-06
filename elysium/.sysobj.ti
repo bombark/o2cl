@@ -1,7 +1,7 @@
 class=proj:ticlass
 name='o2cl-elysium'
 description="    class to create static html page from tiobj files"
-
+prefix_install="o2cl/class/elysium"
 
 Depend{name='libtiobj'}
 

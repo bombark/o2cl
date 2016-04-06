@@ -1,25 +1,23 @@
-class=proj:ticlass
-name='o2cl-repository'
+class=proj:o2cl
+name='repository'
 description="    Class to handle the DEB repository using reprepro"
 
 
-Depend{name='o2cl'}
+#Depend{name='o2cl'}
 
 
+Exec{to="bin";src="src/add"}
+Exec{to="bin";src="src/gen"}
+Exec{to="bin";src="src/info"}
+Exec{to="bin";src="src/ls"}
+Exec{to="bin";src="src/new"}
+Exec{to="bin";src="src/rm"}
+Exec{to="bin";src="src/default"}
+Exec{to="bin";src="src/use"}
 
-Bash{name="add";src="add.sh"}
-Bash{name="gen";src="gen.sh"}
-Bash{name="info";src="info.sh"}
-Bash{name="ls";src="ls.sh"}
-Bash{name="new";src="new.sh"}
-Bash{name="rm";src="rm.sh"}
-Bash{name="default";src="default.sh"}
-Bash{name="use";src="use.sh"}
 
-
-Package{name="gpg"}
-Bash{name="gpg/gen";src="gpg/gen.sh"}
-Bash{name="gpg/ls";src="gpg/ls.sh"}
-Bash{name="gpg/use";src="gpg/use.sh"}
+Exec{to="bin/gpg";src="src/gpg/gen"}
+Exec{to="bin/gpg";src="src/gpg/ls"}
+Exec{to="bin/gpg";src="src/gpg/use"}
 
 

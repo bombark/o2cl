@@ -1,0 +1,10 @@
+cmake_minimum_required (VERSION 2.6)
+project ("o2cl-remote")
+set(CMAKE_BUILD_TYPE RELEASE)
+
+
+INSTALL(PROGRAMS src/enter DESTINATION bin)
+INSTALL(PROGRAMS src/push DESTINATION bin)
+INSTALL(PROGRAMS src/mount DESTINATION bin)
+INSTALL(PROGRAMS src/use DESTINATION bin)
+INSTALL(PROGRAMS src/default DESTINATION bin)

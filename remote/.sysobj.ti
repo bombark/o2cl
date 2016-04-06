@@ -1,13 +1,13 @@
-class=proj:ticlass
-name='o2cl-remote'
+class=proj:o2cl
+name='remote'
 description="    Class to handle remote host using ssh and scp"
 
 prefix_install="o2cl/class/remote"
 
-Bash{name="enter";src="enter.sh"}
-Bash{name="push";src="push.sh"}
-Bash{name="mount";src="mount.sh"}
-Bash{name="use";src="use.sh"}
-Bash{name="default";src="default.sh"}
+Exec{to="bin";src="src/enter"}
+Exec{to="bin";src="src/push"}
+Exec{to="bin";src="src/mount"}
+Exec{to="bin";src="src/use"}
+Exec{to="bin";src="src/default"}
 
 Data{name="syntax";src="syntax"}

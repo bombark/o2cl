@@ -3,6 +3,8 @@
 #include <vector>
 #include <stdio.h>
 #include <stdlib.h>
+#include <functional>
+#include <cassert>
 
 using namespace std;
 
@@ -24,21 +26,32 @@ class Elisyum{
 		objs.loadFile(filename);
 
 		if ( objs.has("template") ){
-			db.loadFile( objs.atStr("template") );
-			if ( db.is("ERROR") ){
-				cerr << "Template não encontrado\n";
-				return;
+			TiVar& var_tmpl = objs["template"];
+			if ( var_tmpl.isObj() ){
+				this->db = var_tmpl.atObj();
+			} else {
+				db.loadFile( objs.atStr("template") );
+				if ( db.is("Error") ){
+					cerr << objs;
+					return;
+				}
 			}
 		} else {
-			cerr << "Nao existe template configurado\n";
+			if ( objs.is("Error") ){
+				cerr << objs;
+			} else 
+				cerr << "Nao existe template configurado\n";
 			return;
 		}
 
 		this->root = objs.atStr("root",".");
 
+		// Reopen cout
 		int pos = filename.find_last_of('.');
 		string outfile = Join("%s.html").at(filename.substr(0,pos)).ok;
 		freopen (outfile.c_str(),"w",stdout);
+
+		// Create the response
 		cout << "<html><head>\n";
 		cout << "\t<meta charset=\"utf-8\">\n";
 		for (int i=0; i<objs.size(); i++){
@@ -59,9 +72,30 @@ class Elisyum{
 		}
 		cout << "</body></html>\n";
 
+		// Close the file
 		fclose(stdout);
 	}
 
+
+	std::string getHtmlFromClass(std::string class_name){
+		if ( class_name == "Css" )
+			return "";
+
+		TiVar& var = db.at(class_name);
+		if ( var.isObj() )
+			return var.atObj().atStr("html");
+		else if ( var.isStr() )
+			return var.atStr();
+		else{
+			cerr << "   Error in " << class_name << endl;
+			return "";
+		}
+	}
+
+	inline TiObj& getTemplate( TiObj& node ){
+		TiVar& var = db.at(node.classe);
+		return *this->getObject(var);
+	}
 
 
 	void process(TiObj& obj){
@@ -88,91 +122,175 @@ class Elisyum{
 		if ( error )
 			return;
 
+		// Get Template
+		TiObj* tempalte;
+		if ( obj.classe == "" ){
+			if ( this->stack.size() > 0 ){
+				TiObj* parent = this->stack.back();
+				if ( parent->has("default") ){
+					tempalte = this->getObject(parent->at("default"));
+				}
+			} else
+				cerr << "Pilha desbalanceada\n";
 
-		if ( obj.is("Package") ){
+		} else
+			tempalte = &getTemplate(obj); 
+		assert(tempalte!=nullptr);
+
+		// Process the template with the variable
+		if ( tempalte->has("ini") || tempalte->has("end") ){
 			this->stack.push_back(   &this->db.atObj(obj.classe)   );
-			cout << this->parse( db.atObj( obj.classe ).atStr("ini"), obj);
+			std::string ini = tempalte->atStr("ini");
+			std::string end = tempalte->atStr("end");
+			cout << this->parseTmpl(ini,obj);
 			for (int i=0; i<obj.size(); i++){
 				this->process( obj.box[i] );
 			}
-			cout << this->parse( db.atObj( obj.classe ).atStr("end"), obj);
+			cout << this->parseTmpl(end,obj);
 			this->stack.pop_back();
 		} else {
-			if ( obj.classe == "" ){
-				TiObj& parent = *this->stack[ this->stack.size()-1 ];
-				cout << this->parse( parent.atStr("default"), obj);
-			} else {
-				TiVar& var = db.at(obj.classe);
-				if ( var.isObj() )
-					cout << this->parse(var.atObj().atStr("html"), obj);
-				else if ( var.isStr() )
-					cout << this->parse(var.atStr(), obj);
-			}
+			cout << this->parseTmpl(tempalte->atStr("txt"),obj);
 		}
 
 	}
 
 
 
-
-	std::string parse(std::string html, TiObj& data){
-		string out = "";
-		string var;
-		string def;
-		bool isvar = false;
-
-		for (int i=0; i<html.size(); i++){
-			char c = html[i];
-
-			if ( isvar == false ){
-				if ( c == '@' ){
-					isvar = true;
-				} else {
-					out += c;
-				}
+	// text= "<p> @title(default=10)"
+	// node= "Title{title='Um novo começo';text='felipe'}"
+	std::string parseTmpl(std::string text, TiObj& node){
+		// decl= "name{default=10}"
+		auto func = [](Elisyum& el, TiObj& decl, TiObj& var) -> std::string {
+			string res;
+			string field = decl.classe;
+			if ( field == "root" ){
+				return el.root;
+			}
+			
+			if ( var.has(field) ){
+				res += decl.atStr("ini");
+				res += var.atStr( field );
+				res += decl.atStr("end");
 			} else {
-				if ( isalnum(c) || c==':' || c=='_' ){
-					var += c;
-				} else if ( c == '=' ){
-					isvar = false;
+				if ( decl.has("default") ){
+					res += decl.atStr("ini");
+					res += decl.atStr("default");
+					res += decl.atStr("end");
+				}
+			}
+			return res;
+		};
+		return this->parseText('@', text, node, func);
+	}
 
-					i += 1;
-					
-					while ( i<html.size() ){
-						char c = html[i];
-						if ( c == ';' )
-							break;
-						def += c;
-						i+=1;
-					}
 
-					
-					if ( data.has(var) ){
-						out += data.atStr(var);
-					} else {
-						out += def;
-					}
+
+
+
+	std::string parseVar(std::string text, TiObj& node){
+		// decl= "name{default=10}"
+		auto func = [](Elisyum& el, TiObj& decl, TiObj& var) -> std::string {
+			string res;
+			string field = decl.classe;
+			if ( var.has(field) ){
+				res += decl.atStr("ini");
+				res += var.atStr( field );
+				res += decl.atStr("end");
+			} else {
+				if ( decl.has("default") ){
+					res += decl.atStr("ini");
+					res += decl.atStr("default");
+					res += decl.atStr("end");
+				}
+			}
+			return res;
+		};
+		return this->parseText('$', text, node, func);
+	}
+
+
+
+
+
+	std::string parseText(
+		char mark_ini,
+		std::string text,
+		TiObj& var,
+		std::function<std::string(Elisyum& el, TiObj& decl, TiObj& var)> func
+	){
+
+		string res, buf, buf2;
+		int status = 0, ant=' ';
+		for (int i=0; i<text.size(); i++){
+			char c = text[i];
+
+			if ( status == -1 ){
+				if ( c == mark_ini )
+					buf += c;
+				else if ( c == '\\' )
+					buf += c;
+				else if ( c == '(' )
+					buf += c;
+				else if ( c == ')' )
+					buf += c;
+				else {
+					buf += '\\';
+					buf += c;
+				}
+				status = 0;
 				
-					def = "";
-					var = "";
-				} else {
-					isvar = false;
-					if ( var == "root" ){
-						out += this->root;
-					} else {
-						if ( data.has(var) ){
-							out += data.atStr(var);
-						}
-					}
-					out += c;
-					var = "";
+			// <br> aaa teste $class_name(tiobj) </br>
+			} else if ( status == 0 ){
+				if ( c == mark_ini ){
+					status = 1;
+				} else 
+					res += c;
+					
+			// $class_name(tiobj) </br>
+			} else if ( status == 1 ){
+				if ( c == '(' )
+					status = 2;
+				else if ( isalnum(c) )
+					buf += c;
+				else {
+					TiObj decl( Join("class='%s'").at(buf).ok );
+					res += func(*this,decl,var);
+					res += c;
+					buf = buf2 = "";
+					status = 0;
 				}
+			//(tiobj) </br>
+			} else if ( status == 2 ){
+				if ( c == ')' )
+					status = 3;
+				else
+					buf2 += c;
+			// ) </br>
+			} else if ( status == 3 ){
+				TiObj decl( Join("class='%s';%s").at(buf).at(buf2).ok );
+				res += func(*this,decl,var);
+				res += c;
+				buf = buf2 = "";
+				status = 0;
 			}
-
+			
+			if ( c == '\\' )
+				status = -1;
+			
+			ant = c;
 		}
-		return out;
+		return res;
 	}
-
+	
+	
+	TiObj* getObject(TiVar& var){
+		if ( var.isObj() )
+			return &var.atObj();
+		TiObj* obj = new TiObj;
+		obj->set("txt", var.atStr());
+		return obj;
+	}
+	
 };
 
 
@@ -209,5 +327,11 @@ int main(int argc, char** argv){
 		Elisyum el;
 		el.create(akk[i]);
 	}
+	
+	/*Elisyum el;
+	TiObj obj("class=Image;url=aaaa");
+	cout << el.parseTmpl("<h1>@text(default=10;ini='<p>';end='</p>') </h1>",obj);*/
+	
+	
 	return 0;
 }

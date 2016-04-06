@@ -1,0 +1,20 @@
+Source:  {{name}}
+Priority: extra
+Maintainer: felipebombardelli <felipebombardelli@gmail.com>
+Build-Depends: debhelper (>= 7.0.50~), autotools-dev
+Standards-Version: 0.8.0
+Section: libs
+
+Package:  lib{{name}}-dev
+Section: libdevel
+Architecture: any
+Depends: lib{{name}} (= ${binary:Version})
+Description: {{brief}}
+{{description}}
+
+Package:  lib{{name}}
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: {{brief}}
+{{description}}
